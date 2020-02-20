@@ -1,0 +1,11 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="CoordinatorApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+    <module name="coordinator.main" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="com.master_thesis.coordinator.CoordinatorApplication" />
+    <option name="VM_PARAMETERS" value="-Dserver.port=4000" />
+    <option name="ALTERNATIVE_JRE_PATH" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
