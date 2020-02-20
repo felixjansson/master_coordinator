@@ -1,5 +1,6 @@
 package com.master_thesis.coordinator;
 
+import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.LinkedList;
@@ -35,9 +36,13 @@ public class Coordinator {
         return client;
     }
 
-    @GetMapping(value = "/client/amount")
-    int getClientCount(){
-        return clients.size();
+    @GetMapping(value = "/client/list")
+    List<Integer> getClientList(){
+        List<Integer> tmp = new LinkedList<>();
+        for (Client client : clients) {
+            tmp.add(client.getId());
+        }
+        return tmp;
     }
 
     @DeleteMapping
