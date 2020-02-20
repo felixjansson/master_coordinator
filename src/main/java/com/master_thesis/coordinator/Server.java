@@ -6,6 +6,16 @@ public class Server {
 
     private URI uri;
 
+    private int serverID;
+
+    public int getServerID() {
+        return serverID;
+    }
+
+    public void setServerID(int serverID) {
+        this.serverID = serverID;
+    }
+
     public URI getUri() {
         return uri;
     }

@@ -19,8 +19,9 @@ public class Coordinator {
     }
 
     @PostMapping(value = "/server/register")
-    int registerServer(@RequestBody Server uri) {
-        servers.add(uri);
+    int registerServer(@RequestBody Server server) {
+        server.setServerID(servers.size());
+        servers.add(server);
         return servers.size();
     }
 
