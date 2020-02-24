@@ -3,8 +3,10 @@ package com.master_thesis.coordinator;
 import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
@@ -28,6 +30,16 @@ public class Coordinator {
     @GetMapping(value = "/server/list")
     List<Server> getServerList(){
         return servers;
+    }
+
+    @GetMapping(value = "/server/list/ids")
+    List<Integer> getServerIDList(){
+        return servers.stream().map(Server::getServerID).collect(Collectors.toList());
+    }
+
+    @GetMapping(value = "/server/list/uri")
+    List<URI> getServerURI(){
+        return servers.stream().map(Server::getUri).collect(Collectors.toList());
     }
 
     @PostMapping(value = "/client/register")
