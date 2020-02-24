@@ -22,9 +22,10 @@ public class Coordinator {
 
     @PostMapping(value = "/server/register")
     int registerServer(@RequestBody Server server) {
-        server.setServerID(servers.size());
+        int serverID = servers.size();
+        server.setServerID(serverID);
         servers.add(server);
-        return servers.size();
+        return serverID;
     }
 
     @GetMapping(value = "/server/list")
