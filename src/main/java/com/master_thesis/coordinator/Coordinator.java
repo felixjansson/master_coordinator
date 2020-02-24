@@ -1,11 +1,12 @@
 package com.master_thesis.coordinator;
 
-import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -45,18 +46,28 @@ public class Coordinator {
 
     @PostMapping(value = "/client/register")
     Client registerClient() {
-        Client client = new Client(clients.size());
+        Client client = new Client(clients.size(), 0); //TODO : transformator id set here!
         clients.add(client);
         return client;
     }
 
     @GetMapping(value = "/client/list")
-    List<Integer> getClientList(){
-        List<Integer> tmp = new LinkedList<>();
-        for (Client client : clients) {
-            tmp.add(client.getId());
-        }
-        return tmp;
+    Map<Integer, List<Client>> getClientList(){
+        Map<Integer, List<Client>> json = new HashMap<>();
+        clients.forEach(client -> {
+            json.putIfAbsent(client.getTransformatorID(), new LinkedList<>());
+            json.get(client.getTransformatorID()).add(client);
+        });
+        return json;
+    }
+
+    @GetMapping(value = "/client/list/{transformatorID}")
+    List<Integer> getClientListForTransformatorID(@PathVariable int transformatorID){
+        List<Integer> clientIDs = clients.stream()
+                .filter(client -> client.isConnectedTo(transformatorID))
+                .map(Client::getClientID)
+                .collect(Collectors.toList());
+        return clientIDs;
     }
 
     @DeleteMapping
