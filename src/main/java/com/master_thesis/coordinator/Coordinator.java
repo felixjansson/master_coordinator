@@ -2,6 +2,7 @@ package com.master_thesis.coordinator;
 
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigInteger;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -23,7 +24,7 @@ public class Coordinator {
 
     @PostMapping(value = "/server/register")
     int registerServer(@RequestBody Server server) {
-        int serverID = servers.size();
+        int serverID = servers.size() + 1;
         server.setServerID(serverID);
         servers.add(server);
         return serverID;
@@ -68,6 +69,17 @@ public class Coordinator {
                 .map(Client::getClientID)
                 .collect(Collectors.toList());
         return clientIDs;
+    }
+
+    @GetMapping(value = "/setup/generator/{transformatorID}")
+    int getGenerator(@PathVariable int transformatorID) {
+        return 29;
+    }
+
+
+    @GetMapping(value = "/setup/fieldBase/{transformatorID}")
+    int getFieldBase(@PathVariable int transformatorID) {
+        return 991;
     }
 
     @DeleteMapping
