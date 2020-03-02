@@ -16,10 +16,15 @@ public class Coordinator {
 
     List<Server> servers;
     List<Client> clients;
+    private int generator = 307;
+//    private final BigInteger fieldBase = BigInteger.valueOf(991);
+    private final BigInteger fieldBase = BigInteger.ONE.shiftLeft(107).subtract(BigInteger.ONE);
+    private int tSecurity = 2;
 
     public Coordinator() {
         servers = new LinkedList<>();
         clients = new LinkedList<>();
+//        checkGenerator();
     }
 
     @PostMapping(value = "/server/register")
@@ -73,13 +78,39 @@ public class Coordinator {
 
     @GetMapping(value = "/setup/generator/{transformatorID}")
     int getGenerator(@PathVariable int transformatorID) {
-        return 29;
+        return generator;
+    }
+
+    @PostMapping(value = "/setup/generator/{transformatorID}/{newG}")
+    void setGenerator(@PathVariable int transformatorID, @PathVariable int newG) {
+        generator = newG;
+    }
+
+    private void checkGenerator() {
+        BigInteger g = BigInteger.valueOf(generator);
+        System.out.print("Order of " + generator + " in field " + fieldBase + ": ");
+        for (BigInteger i = BigInteger.ONE; !i.equals(fieldBase); i = i.add(BigInteger.ONE)) {
+            if (g.modPow(i, fieldBase).equals(BigInteger.ONE)) {
+                System.out.println(i);
+                return;
+            }
+        }
+    }
+
+    @GetMapping(value = "/setup/t-security/{transformatorID}")
+    int getTSecurity(@PathVariable int transformatorID) {
+        return tSecurity;
+    }
+
+    @PostMapping(value = "/setup/t-security/{transformatorID}/{newT}")
+    void setTSecurity(@PathVariable int transformatorID, @PathVariable int newT) {
+        tSecurity = newT;
     }
 
 
     @GetMapping(value = "/setup/fieldBase/{transformatorID}")
-    int getFieldBase(@PathVariable int transformatorID) {
-        return 991;
+    BigInteger getFieldBase(@PathVariable int transformatorID) {
+        return fieldBase;
     }
 
     @DeleteMapping
