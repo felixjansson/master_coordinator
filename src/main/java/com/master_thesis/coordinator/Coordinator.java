@@ -120,6 +120,10 @@ public class Coordinator {
         tSecurity = newT;
     }
 
+    @PostMapping(value = "/setup/fieldBase/{transformatorID}/{fieldBase}")
+    void setFieldBase(@PathVariable int transformatorID, @PathVariable String fieldBase) {
+        this.fieldBase = new BigInteger(fieldBase);
+    }
 
     @GetMapping(value = "/setup/fieldBase/{transformatorID}")
     BigInteger getFieldBase(@PathVariable int transformatorID) {
