@@ -8,12 +8,16 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
 public class Coordinator {
 
+    private Lock serverLock;
     List<Server> servers;
     List<Client> clients;
     private int generator = 307;
@@ -22,17 +26,26 @@ public class Coordinator {
     private int tSecurity = 2;
 
     public Coordinator() {
+        serverLock = new ReentrantLock();
         servers = new LinkedList<>();
         clients = new LinkedList<>();
 //        checkGenerator();
     }
 
     @PostMapping(value = "/server/register")
-    int registerServer(@RequestBody Server server) {
-        int serverID = servers.size() + 1;
-        server.setServerID(serverID);
-        servers.add(server);
-        return serverID;
+    int registerServer(@RequestBody Server server) throws InterruptedException {
+        boolean isLockAcquired = serverLock.tryLock(1, TimeUnit.SECONDS);
+        if (isLockAcquired) {
+            try {
+                int serverID = servers.size() + 1;
+                server.setServerID(serverID);
+                servers.add(server);
+                return serverID;
+            } finally {
+                serverLock.unlock();
+            }
+        }
+        throw new RuntimeException("Could not register server. Lock issues?");
     }
 
     @GetMapping(value = "/server/list")
