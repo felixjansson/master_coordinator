@@ -1,5 +1,6 @@
 package com.master_thesis.coordinator;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigInteger;
@@ -19,16 +20,18 @@ public class Coordinator {
 
     private Lock serverLock;
     List<Server> servers;
-    List<Client> clients;
-    private int generator = 307;
-//    private final BigInteger fieldBase = BigInteger.valueOf(991);
-    private final BigInteger fieldBase = BigInteger.ONE.shiftLeft(107).subtract(BigInteger.ONE);
+    Map<Integer, List<Client>> clients;
+    private BigInteger generator = BigInteger.valueOf(307);
+    private BigInteger fieldBase = BigInteger.valueOf(991);
+    //    private BigInteger fieldBase = BigInteger.ONE.shiftLeft(107).subtract(BigInteger.ONE);
     private int tSecurity = 2;
+    private Map<Integer, Integer> fids;
 
     public Coordinator() {
         serverLock = new ReentrantLock();
         servers = new LinkedList<>();
-        clients = new LinkedList<>();
+        clients = new HashMap<>();
+        fids = new HashMap<>();
 //        checkGenerator();
     }
 
@@ -65,68 +68,83 @@ public class Coordinator {
 
     @PostMapping(value = "/client/register")
     Client registerClient() {
-        Client client = new Client(clients.size(), 0); //TODO : transformator id set here!
-        clients.add(client);
+        int substationID = 0; //TODO : substation id set here!
+        fids.putIfAbsent(substationID, 1);
+        Client client = new Client(clients.size(), substationID, fids.get(substationID));
+        clients.putIfAbsent(substationID, new LinkedList<>());
+        clients.get(substationID).add(client);
         return client;
     }
 
     @GetMapping(value = "/client/list")
-    Map<Integer, List<Client>> getClientList(){
-        Map<Integer, List<Client>> json = new HashMap<>();
-        clients.forEach(client -> {
-            json.putIfAbsent(client.getTransformatorID(), new LinkedList<>());
-            json.get(client.getTransformatorID()).add(client);
-        });
-        return json;
+    Map<Integer, List<Client>> getClientList() {
+        return clients;
     }
 
-    @GetMapping(value = "/client/list/{transformatorID}")
-    List<Integer> getClientListForTransformatorID(@PathVariable int transformatorID){
-        List<Integer> clientIDs = clients.stream()
-                .filter(client -> client.isConnectedTo(transformatorID))
-                .map(Client::getClientID)
-                .collect(Collectors.toList());
-        return clientIDs;
+    @PostMapping(value = "/client/fid")
+    int updateFidForClient(@RequestBody JsonNode body) {
+        // TODO: 3/26/2020 This function does probably not work as we want
+        int clientID = body.get("clientID").asInt();
+        int substationID = body.get("substationID").asInt();
+        int clientFid = body.get("fid").asInt();
+        int fid = fids.get(substationID);
+        Client client = clients.get(substationID).get(clientID);
+        int largestFid = Math.max(fid, clientFid);
+        fids.put(substationID, largestFid);
+        client.setFid(largestFid);
+        return largestFid;
     }
 
-    @GetMapping(value = "/setup/generator/{transformatorID}")
-    int getGenerator(@PathVariable int transformatorID) {
+    @GetMapping(value = "/client/list/{substationID}")
+    List<Integer> getClientListForSubstationID(@PathVariable int substationID) {
+        return clients.get(substationID).stream()
+                .map(Client::getClientID).collect(Collectors.toList());
+    }
+
+    @GetMapping(value = "/client/list/{substationID}/{fid}")
+    List<Integer> getClientListForSubstationIDFid(@PathVariable int substationID, @PathVariable int fid) {
+        return clients.get(substationID).stream()
+                .filter(client -> client.getFid() == fid)
+                .map(Client::getClientID).collect(Collectors.toList());
+    }
+
+    @GetMapping(value = "/setup/generator/{substationID}")
+    BigInteger getGenerator(@PathVariable int substationID) {
         return generator;
     }
 
-    @PostMapping(value = "/setup/generator/{transformatorID}/{newG}")
-    void setGenerator(@PathVariable int transformatorID, @PathVariable int newG) {
+    @PostMapping(value = "/setup/generator/{substationID}/{newG}")
+    void setGenerator(@PathVariable int substationID, @PathVariable BigInteger newG) {
         generator = newG;
     }
 
     private void checkGenerator() {
-        BigInteger g = BigInteger.valueOf(generator);
         System.out.print("Order of " + generator + " in field " + fieldBase + ": ");
         for (BigInteger i = BigInteger.ONE; !i.equals(fieldBase); i = i.add(BigInteger.ONE)) {
-            if (g.modPow(i, fieldBase).equals(BigInteger.ONE)) {
+            if (generator.modPow(i, fieldBase).equals(BigInteger.ONE)) {
                 System.out.println(i);
                 return;
             }
         }
     }
 
-    @GetMapping(value = "/setup/t-security/{transformatorID}")
-    int getTSecurity(@PathVariable int transformatorID) {
+    @GetMapping(value = "/setup/t-security/{substationID}")
+    int getTSecurity(@PathVariable int substationID) {
         return tSecurity;
     }
 
-    @PostMapping(value = "/setup/t-security/{transformatorID}/{newT}")
-    void setTSecurity(@PathVariable int transformatorID, @PathVariable int newT) {
+    @PostMapping(value = "/setup/t-security/{substationID}/{newT}")
+    void setTSecurity(@PathVariable int substationID, @PathVariable int newT) {
         tSecurity = newT;
     }
 
-    @PostMapping(value = "/setup/fieldBase/{transformatorID}/{fieldBase}")
-    void setFieldBase(@PathVariable int transformatorID, @PathVariable String fieldBase) {
+    @PostMapping(value = "/setup/fieldBase/{substationID}/{fieldBase}")
+    void setFieldBase(@PathVariable int substationID, @PathVariable String fieldBase) {
         this.fieldBase = new BigInteger(fieldBase);
     }
 
-    @GetMapping(value = "/setup/fieldBase/{transformatorID}")
-    BigInteger getFieldBase(@PathVariable int transformatorID) {
+    @GetMapping(value = "/setup/fieldBase/{substationID}")
+    BigInteger getFieldBase(@PathVariable int substationID) {
         return fieldBase;
     }
 

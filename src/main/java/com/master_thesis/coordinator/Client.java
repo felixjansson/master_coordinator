@@ -3,21 +3,22 @@ package com.master_thesis.coordinator;
 public class Client {
 
     private int clientID;
-    private int transformatorID;
+    private int substationID;
+    private int fid;
 
-    public Client(int clientID, int transformatorID) {
+    public Client(int clientID, int substationID, int fid) {
         this.clientID = clientID;
-        this.transformatorID = transformatorID;
+        this.substationID = substationID;
+        this.fid = fid;
     }
 
-    public int getTransformatorID() {
-        return transformatorID;
+    public int getSubstationID() {
+        return substationID;
     }
 
-    public void setTransformatorID(int transformatorID) {
-        this.transformatorID = transformatorID;
+    public void setSubstationID(int substationID) {
+        this.substationID = substationID;
     }
-
 
     public int getClientID() {
         return clientID;
@@ -27,8 +28,15 @@ public class Client {
         this.clientID = clientID;
     }
 
-    public boolean isConnectedTo(int transformatorID) {
-        return this.transformatorID == transformatorID;
+    public boolean isConnectedTo(int substationID) {
+        return this.substationID == substationID;
     }
 
+    public int getFid() {
+        return fid;
+    }
+
+    public void setFid(int fid) {
+        this.fid = fid;
+    }
 }
