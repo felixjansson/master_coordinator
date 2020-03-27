@@ -129,6 +129,11 @@ public class Coordinator {
         return tSecurity;
     }
 
+    @PostMapping(value = "/setup/setFid/{substationID}")
+    void setFid(@PathVariable int substationID, @RequestBody int newFid) {
+        fids.put(substationID, newFid);
+    }
+
     @PostMapping(value = "/setup/t-security/{substationID}/{newT}")
     void setTSecurity(@PathVariable int substationID, @PathVariable int newT) {
         tSecurity = newT;
