@@ -4,12 +4,12 @@ public class Client {
 
     private int clientID;
     private int substationID;
-    private int fid;
+    private int startFid;
 
-    public Client(int clientID, int substationID, int fid) {
+    public Client(int clientID, int substationID, int startFid) {
         this.clientID = clientID;
         this.substationID = substationID;
-        this.fid = fid;
+        this.startFid = startFid;
     }
 
     public int getSubstationID() {
@@ -32,11 +32,11 @@ public class Client {
         return this.substationID == substationID;
     }
 
-    public int getFid() {
-        return fid;
+    public int getStartFid() {
+        return startFid;
     }
 
-    public void setFid(int fid) {
-        this.fid = fid;
+    public void setStartFid(int startFid) {
+        this.startFid = startFid;
     }
 }

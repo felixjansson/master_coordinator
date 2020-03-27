@@ -70,8 +70,8 @@ public class Coordinator {
     Client registerClient() {
         int substationID = 0; //TODO : substation id set here!
         fids.putIfAbsent(substationID, 1);
-        Client client = new Client(clients.size(), substationID, fids.get(substationID));
         clients.putIfAbsent(substationID, new LinkedList<>());
+        Client client = new Client(clients.get(substationID).size(), substationID, fids.get(substationID));
         clients.get(substationID).add(client);
         return client;
     }
@@ -82,17 +82,13 @@ public class Coordinator {
     }
 
     @PostMapping(value = "/client/fid")
-    int updateFidForClient(@RequestBody JsonNode body) {
+    void updateFid(@RequestBody JsonNode body) {
         // TODO: 3/26/2020 This function does probably not work as we want
-        int clientID = body.get("clientID").asInt();
         int substationID = body.get("substationID").asInt();
         int clientFid = body.get("fid").asInt();
         int fid = fids.get(substationID);
-        Client client = clients.get(substationID).get(clientID);
         int largestFid = Math.max(fid, clientFid);
         fids.put(substationID, largestFid);
-        client.setFid(largestFid);
-        return largestFid;
     }
 
     @GetMapping(value = "/client/list/{substationID}")
@@ -104,7 +100,7 @@ public class Coordinator {
     @GetMapping(value = "/client/list/{substationID}/{fid}")
     List<Integer> getClientListForSubstationIDFid(@PathVariable int substationID, @PathVariable int fid) {
         return clients.get(substationID).stream()
-                .filter(client -> client.getFid() == fid)
+                .filter(client -> client.getStartFid() <= fid)
                 .map(Client::getClientID).collect(Collectors.toList());
     }
 
