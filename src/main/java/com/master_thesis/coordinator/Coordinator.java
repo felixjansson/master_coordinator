@@ -52,17 +52,17 @@ public class Coordinator {
     }
 
     @GetMapping(value = "/server/list")
-    List<Server> getServerList(){
+    List<Server> getServerList() {
         return servers;
     }
 
     @GetMapping(value = "/server/list/ids")
-    List<Integer> getServerIDList(){
+    List<Integer> getServerIDList() {
         return servers.stream().map(Server::getServerID).collect(Collectors.toList());
     }
 
     @GetMapping(value = "/server/list/uri")
-    List<URI> getServerURI(){
+    List<URI> getServerURI() {
         return servers.stream().map(Server::getUri).collect(Collectors.toList());
     }
 
