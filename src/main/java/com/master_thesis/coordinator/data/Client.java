@@ -1,4 +1,4 @@
-package com.master_thesis.coordinator;
+package com.master_thesis.coordinator.data;
 
 public class Client {
 

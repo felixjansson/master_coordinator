@@ -1,6 +1,8 @@
 package com.master_thesis.coordinator;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.master_thesis.coordinator.data.Client;
+import com.master_thesis.coordinator.data.Server;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigInteger;
@@ -93,7 +95,7 @@ public class Coordinator {
 
     @GetMapping(value = "/client/list/{substationID}")
     List<Integer> getClientListForSubstationID(@PathVariable int substationID) {
-        return clients.get(substationID).stream()
+        return clients.getOrDefault(substationID, List.of()).stream()
                 .map(Client::getClientID).collect(Collectors.toList());
     }
 
