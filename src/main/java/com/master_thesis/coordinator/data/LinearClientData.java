@@ -6,13 +6,13 @@ public class LinearClientData extends LinearPublicData {
 
     private BigInteger[] sk;
 
-    public LinearClientData(BigInteger n, BigInteger NRoof, BigInteger g, BigInteger g1, BigInteger[] h, BigInteger[] sk) {
-        super(n, NRoof, g, g1, h);
+    public LinearClientData(BigInteger n, BigInteger NRoof, BigInteger g, BigInteger g1, BigInteger[] sk) {
+        super(n, NRoof, g, g1);
         this.sk = sk;
     }
 
-    public LinearClientData(LinearClientData linearClientData, BigInteger prime) {
-        super(linearClientData, prime);
+    public LinearClientData(LinearClientData linearClientData, BigInteger[] hVector, BigInteger prime) {
+        super(linearClientData, hVector, prime);
         this.sk = linearClientData.sk;
     }
 

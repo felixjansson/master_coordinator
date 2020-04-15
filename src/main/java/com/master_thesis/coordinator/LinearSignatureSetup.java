@@ -25,7 +25,8 @@ public class LinearSignatureSetup {
     private final int PRIME_BIT_LENGTH = 64;
     private final int PRIME_BIT_LENGTH_PRIME = 64;
 
-    private Map<Integer, Substation>  substationPrimes;
+    private Map<Integer, Substation<BigInteger>>  substationPrimes;
+    private Map<Integer, Substation<BigInteger[]>>  substationHs;
     private Map<Integer, LinearClientData> substationData;
     private Coordinator coordinator;
     private LastClientTau lastClientTau;
@@ -34,6 +35,7 @@ public class LinearSignatureSetup {
     public LinearSignatureSetup(Coordinator coordinator, LastClientTau lastClientTau) {
         this.coordinator = coordinator;
         substationPrimes = new HashMap<>();
+        substationHs = new HashMap<>();
         substationData = new HashMap<>();
         this.lastClientTau = lastClientTau;
     }
@@ -46,14 +48,19 @@ public class LinearSignatureSetup {
         substationData.putIfAbsent(substationID, substationSetup());
         LinearClientData linearClientData = substationData.get(substationID);
 
-        updateHVector(linearClientData, numberOfClients);
 
-        substationPrimes.putIfAbsent(substationID, new Substation());
-        Substation substation = substationPrimes.get(substationID);
+        substationHs.putIfAbsent(substationID, new Substation<>());
+        Substation<BigInteger[]> substationH = substationHs.get(substationID);
+        substationH.putIfAbsent(fid, generateHVector(numberOfClients, linearClientData.getNRoof()));
+        BigInteger[] hVector = substationH.get(fid);
 
-        substation.putIfAbsent(fid, generateUniquePrime(substation.values(), linearClientData));
-        BigInteger prime = substation.get(fid);
-        LinearClientData data = new LinearClientData(linearClientData, prime);
+
+        substationPrimes.putIfAbsent(substationID, new Substation<>());
+        Substation<BigInteger> substationPrime = substationPrimes.get(substationID);
+        substationPrime.putIfAbsent(fid, generateUniquePrime(substationPrime.values(), linearClientData));
+        BigInteger prime = substationPrime.get(fid);
+
+        LinearClientData data = new LinearClientData(linearClientData, hVector, prime);
         log.debug("Returning [sid: {}, fid: {}] {}", substationID, fid, new ObjectMapper().writeValueAsString(data));
         return data;
     }
@@ -61,25 +68,31 @@ public class LinearSignatureSetup {
     @SneakyThrows
     @GetMapping(value = "/public/{substationID}/{fid}")
     LinearPublicData getLinearPublicData(@PathVariable int substationID, @PathVariable int fid){
+        int numberOfClients = coordinator.getClientListForSubstationID(substationID).size();
         substationData.putIfAbsent(substationID, substationSetup());
         LinearClientData linearClientData = substationData.get(substationID);
 
-        substationPrimes.putIfAbsent(substationID, new Substation());
-        Substation substation = substationPrimes.get(substationID);
 
-        substation.putIfAbsent(fid, generateUniquePrime(substation.values(), linearClientData));
-        BigInteger prime = substation.get(fid);
-        LinearPublicData data = new LinearPublicData(linearClientData, prime);
+        substationHs.putIfAbsent(substationID, new Substation<>());
+        Substation<BigInteger[]> substationH = substationHs.get(substationID);
+        substationH.putIfAbsent(fid, generateHVector(numberOfClients, linearClientData.getNRoof()));
+        BigInteger[] hVector = substationH.get(fid);
+
+        substationPrimes.putIfAbsent(substationID, new Substation<>());
+        Substation<BigInteger> substationPrime = substationPrimes.get(substationID);
+        substationPrime.putIfAbsent(fid, generateUniquePrime(substationPrime.values(), linearClientData));
+        BigInteger prime = substationPrime.get(fid);
+
+        LinearPublicData data = new LinearPublicData(linearClientData, hVector, prime);
         log.debug("Returning PublicData [sid: {}, fid: {}] {}", substationID, fid, new ObjectMapper().writeValueAsString(data));
         return data;
     }
 
-    private void updateHVector(LinearClientData linearClientData, int numberOfClients) {
-        if (linearClientData.getH().length < numberOfClients){
-            BigInteger[] h = Arrays.copyOf(linearClientData.getH(), numberOfClients);
-            Arrays.fill(h, linearClientData.getH().length, numberOfClients, generateRandomBigInteger(linearClientData.getNRoof()));
-            linearClientData.setH(h);
-        }
+    private BigInteger[] generateHVector(int numberOfClients, BigInteger nRoof) {
+            BigInteger[] h = new BigInteger[numberOfClients];
+            Arrays.fill(h, generateRandomBigInteger(nRoof));
+            return h;
+
     }
 
     @GetMapping(value = "/rn/{substationID}/{fid}")
@@ -113,7 +126,7 @@ public class LinearSignatureSetup {
             N = pq[0].multiply(pq[1]);
             log.debug("Generating safe prime try: {}, totientRoof: {}, N: {}", ++tries, totientRoof, N);
         } while (!totientRoof.gcd(N).equals(BigInteger.ONE));
-        return new LinearClientData(N, NRoof, generateRandomBigInteger(NRoof), generateRandomBigInteger(NRoof), new BigInteger[]{}, pqRoof);
+        return new LinearClientData(N, NRoof, generateRandomBigInteger(NRoof), generateRandomBigInteger(NRoof), pqRoof);
     }
 
     private BigInteger generateRandomBigInteger(BigInteger modulo){
@@ -129,6 +142,6 @@ public class LinearSignatureSetup {
         return new BigInteger[]{q, p};
     }
 
-    private class Substation extends HashMap<Integer, BigInteger>{}
+    private static class Substation<T> extends HashMap<Integer, T>{}
 
 }

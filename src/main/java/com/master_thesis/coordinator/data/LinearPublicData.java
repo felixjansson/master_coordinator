@@ -7,17 +7,18 @@ public class LinearPublicData {
     private BigInteger N, NRoof, fidPrime, g, g1;
         private BigInteger[] h;
 
-    public LinearPublicData(BigInteger n, BigInteger NRoof, BigInteger g, BigInteger g1, BigInteger[] h) {
+    public LinearPublicData(BigInteger n, BigInteger NRoof, BigInteger g, BigInteger g1) {
         N = n;
         this.NRoof = NRoof;
         this.g = g;
         this.g1 = g1;
-        this.h = h;
+        this.h = new BigInteger[]{};
     }
 
-    public LinearPublicData(LinearPublicData data, BigInteger fidPrime){
-        this(data.N, data.NRoof, data.g, data.g1, data.h);
+    public LinearPublicData(LinearPublicData data, BigInteger[] hVector, BigInteger fidPrime){
+        this(data.N, data.NRoof, data.g, data.g1);
         this.fidPrime = fidPrime;
+        this.h = hVector;
     }
 
     public BigInteger getN() {
