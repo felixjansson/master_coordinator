@@ -48,12 +48,10 @@ public class LinearSignatureSetup {
         substationData.putIfAbsent(substationID, substationSetup());
         LinearClientData linearClientData = substationData.get(substationID);
 
-
         substationHs.putIfAbsent(substationID, new Substation<>());
         Substation<BigInteger[]> substationH = substationHs.get(substationID);
         substationH.putIfAbsent(fid, generateHVector(numberOfClients, linearClientData.getNRoof()));
         BigInteger[] hVector = substationH.get(fid);
-
 
         substationPrimes.putIfAbsent(substationID, new Substation<>());
         Substation<BigInteger> substationPrime = substationPrimes.get(substationID);

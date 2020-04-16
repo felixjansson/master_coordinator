@@ -6,8 +6,8 @@ public class LinearClientData extends LinearPublicData {
 
     private BigInteger[] sk;
 
-    public LinearClientData(BigInteger n, BigInteger NRoof, BigInteger g, BigInteger g1, BigInteger[] sk) {
-        super(n, NRoof, g, g1);
+    public LinearClientData(BigInteger n, BigInteger NRoof, BigInteger g1, BigInteger g2, BigInteger[] sk) {
+        super(n, NRoof, g1, g2);
         this.sk = sk;
     }
 

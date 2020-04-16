@@ -93,12 +93,6 @@ public class Coordinator {
         fids.put(substationID, largestFid);
     }
 
-    @GetMapping(value = "/client/list/{substationID}")
-    List<Integer> getClientListForSubstationID(@PathVariable int substationID) {
-        return clients.getOrDefault(substationID, List.of()).stream()
-                .map(Client::getClientID).collect(Collectors.toList());
-    }
-
     @GetMapping(value = "/client/list/{substationID}/{fid}")
     List<Integer> getClientListForSubstationIDFid(@PathVariable int substationID, @PathVariable int fid) {
         return clients.get(substationID).stream()
@@ -114,16 +108,6 @@ public class Coordinator {
     @PostMapping(value = "/setup/generator/{substationID}/{newG}")
     void setGenerator(@PathVariable int substationID, @PathVariable BigInteger newG) {
         generator = newG;
-    }
-
-    private void checkGenerator() {
-        System.out.print("Order of " + generator + " in field " + fieldBase + ": ");
-        for (BigInteger i = BigInteger.ONE; !i.equals(fieldBase); i = i.add(BigInteger.ONE)) {
-            if (generator.modPow(i, fieldBase).equals(BigInteger.ONE)) {
-                System.out.println(i);
-                return;
-            }
-        }
     }
 
     @GetMapping(value = "/setup/t-security/{substationID}")
@@ -167,4 +151,18 @@ public class Coordinator {
         clients.clear();
     }
 
+    protected List<Integer> getClientListForSubstationID( int substationID) {
+        return clients.getOrDefault(substationID, List.of()).stream()
+                .map(Client::getClientID).collect(Collectors.toList());
+    }
+
+    private void checkGenerator() {
+        System.out.print("Order of " + generator + " in field " + fieldBase + ": ");
+        for (BigInteger i = BigInteger.ONE; !i.equals(fieldBase); i = i.add(BigInteger.ONE)) {
+            if (generator.modPow(i, fieldBase).equals(BigInteger.ONE)) {
+                System.out.println(i);
+                return;
+            }
+        }
+    }
 }
