@@ -3,14 +3,14 @@ package com.master_thesis.coordinator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.master_thesis.coordinator.data.Client;
 import com.master_thesis.coordinator.data.Server;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigInteger;
 import java.net.URI;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.security.SecureRandom;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -18,23 +18,30 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
+@PropertySource(value = "classpath:rsa.properties")
 public class Coordinator {
 
     private Lock serverLock;
     List<Server> servers;
     Map<Integer, List<Client>> clients;
     private BigInteger generator = BigInteger.valueOf(307);
-    private BigInteger fieldBase = BigInteger.valueOf(991);
+    //    private BigInteger fieldBase = BigInteger.valueOf(991);
+    private Map<Integer, BigInteger> fieldBases;
     //    private BigInteger fieldBase = BigInteger.ONE.shiftLeft(107).subtract(BigInteger.ONE);
     private int tSecurity = 2;
     private Map<Integer, Integer> fids;
+    private Random random;
+
+    @Value("${FIELD_BASE_BITS}")
+    private int fieldBaseBits;
 
     public Coordinator() {
         serverLock = new ReentrantLock();
         servers = new LinkedList<>();
         clients = new HashMap<>();
         fids = new HashMap<>();
-//        checkGenerator();
+        fieldBases = new HashMap<>();
+        random = new SecureRandom();
     }
 
     @PostMapping(value = "/server/register")
@@ -127,12 +134,19 @@ public class Coordinator {
 
     @PostMapping(value = "/setup/fieldBase/{substationID}/{fieldBase}")
     void setFieldBase(@PathVariable int substationID, @PathVariable String fieldBase) {
-        this.fieldBase = new BigInteger(fieldBase);
+        fieldBases.put(substationID, new BigInteger(fieldBase));
+    }
+
+    @PostMapping(value = "/setup/fieldBaseBits/{substationID}/{fieldBase}")
+    void setFieldBaseBits(@PathVariable int substationID, @PathVariable int fieldBaseBits) {
+        this.fieldBaseBits = fieldBaseBits;
+        fieldBases.put(substationID, new BigInteger(fieldBaseBits, 16, random));
     }
 
     @GetMapping(value = "/setup/fieldBase/{substationID}")
     BigInteger getFieldBase(@PathVariable int substationID) {
-        return fieldBase;
+        fieldBases.putIfAbsent(substationID, new BigInteger(fieldBaseBits, 16, random));
+        return fieldBases.get(substationID);
     }
 
     @DeleteMapping
@@ -156,13 +170,4 @@ public class Coordinator {
                 .map(Client::getClientID).collect(Collectors.toList());
     }
 
-    private void checkGenerator() {
-        System.out.print("Order of " + generator + " in field " + fieldBase + ": ");
-        for (BigInteger i = BigInteger.ONE; !i.equals(fieldBase); i = i.add(BigInteger.ONE)) {
-            if (generator.modPow(i, fieldBase).equals(BigInteger.ONE)) {
-                System.out.println(i);
-                return;
-            }
-        }
-    }
 }
