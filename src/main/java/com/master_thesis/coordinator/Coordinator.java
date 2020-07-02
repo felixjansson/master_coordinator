@@ -22,13 +22,13 @@ import java.util.stream.Collectors;
 public class Coordinator {
 
     private Lock serverLock;
-    List<Server> servers;
-    Map<Integer, List<Client>> clients;
+    protected List<Server> servers;
+    protected Map<Integer, List<Client>> clients;
     private BigInteger generator = BigInteger.valueOf(307);
     //    private BigInteger fieldBase = BigInteger.valueOf(991);
     private Map<Integer, BigInteger> fieldBases;
     //    private BigInteger fieldBase = BigInteger.ONE.shiftLeft(107).subtract(BigInteger.ONE);
-    private int tSecurity = 2;
+    protected int tSecurity = 2;
     private Map<Integer, Integer> fids;
     private Random random;
 
@@ -83,11 +83,6 @@ public class Coordinator {
         Client client = new Client(clients.get(substationID).size(), substationID, fids.get(substationID));
         clients.get(substationID).add(client);
         return client;
-    }
-
-    @GetMapping(value = "/client/list")
-    Map<Integer, List<Client>> getClientList() {
-        return clients;
     }
 
     @PostMapping(value = "/client/fid")

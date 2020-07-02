@@ -1,8 +1,14 @@
+import com.github.jengelman.gradle.plugins.shadow.transformers.*
+
 plugins {
     id 'org.springframework.boot' version '2.2.4.RELEASE'
     id 'io.spring.dependency-management' version '1.0.9.RELEASE'
     id 'java'
+    id 'com.github.johnrengelman.shadow' version '5.2.0'
 }
+
+apply plugin: 'java'
+apply plugin: 'com.github.johnrengelman.shadow'
 
 group = 'com.master_thesis'
 version = '0.0.1-SNAPSHOT'
@@ -36,4 +42,28 @@ dependencies {
 
 test {
     useJUnitPlatform()
+}
+
+
+jar {
+    enabled=true
+    manifest {
+        attributes 'Main-Class': 'com.master_thesis.coordinator.CoordinatorApplication'
+    }
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+}
+
+
+shadowJar {
+
+    // Required for Spring
+    mergeServiceFiles()
+    append 'META-INF/spring.handlers'
+    append 'META-INF/spring.schemas'
+    append 'META-INF/spring.tooling'
+    transform(PropertiesFileTransformer) {
+        paths = ['META-INF/spring.factories' ]
+        mergeStrategy = "append"
+    }
+
 }

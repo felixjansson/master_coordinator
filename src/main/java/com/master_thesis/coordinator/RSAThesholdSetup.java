@@ -1,8 +1,11 @@
 package com.master_thesis.coordinator;
 
+import com.master_thesis.coordinator.data.Client;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,20 +37,37 @@ public class RSAThesholdSetup {
             boolean running = true;
             while (running) {
                 System.out.println("[field bits] = " + coordinator.getFieldBase(0) + ", [rsa bits] = " + RSA_PRIME_BIT_LENGTH);
+                System.out.println(String.format("t security: %s\nServers: %s\nClients: %s\n", coordinator.tSecurity, coordinator.servers.toString(), coordinator.clients.toString()));
+                System.out.println("Type the name of the variable to change it");
                 Scanner input = new Scanner(System.in);
                 switch (input.nextLine().replaceAll(" ", "").toLowerCase()) {
                     case "rsabits":
                     case "r":
                         System.out.print("new value: ");
                         RSA_PRIME_BIT_LENGTH = input.nextInt();
+                        input.nextLine();
                         rsaPrimes.put(0, generateRSAPrimes(BigInteger.ZERO));
                         break;
                     case "f":
                     case "fieldbits":
                         System.out.print("new value: ");
                         coordinator.setFieldBaseBits(0, input.nextInt());
+                        input.nextLine();
 //                        fieldBases.put(0, new BigInteger(fieldBaseBits, 16, random));
 //                        System.out.println("New fieldbase: " + fieldBases.get(0));
+                        break;
+                    case "servers":
+                        removeServers(input);
+                        break;
+                    case "t":
+                    case "tsecurity":
+                        System.out.print("new value: ");
+                        coordinator.tSecurity = input.nextInt();
+                        input.nextLine();
+                        break;
+                    case "clients":
+                        removeClients(input);
+                        break;
                 }
             }
 
@@ -55,10 +75,49 @@ public class RSAThesholdSetup {
 
     }
 
+    private void removeClients(Scanner input) {
+        System.out.println("Type an ID or \"ALL\" to remove clients: " + coordinator.clients);
+        String ans = input.nextLine().toLowerCase();
+        if ("all".equals(ans)) {
+            coordinator.clients.clear();
+        } else {
+            try {
+                List<Client> subClients = coordinator.clients.get(Integer.parseInt(ans));
+                System.out.println("Type an ID or \"ALL\" to remove clients: " + subClients);
+                ans = input.nextLine().toLowerCase();
+                if ("all".equals(ans)) {
+                    subClients.clear();
+                } else {
+                    subClients.remove(Integer.parseInt(ans));
+                }
+            } catch (Exception e) {
+                System.out.println("Could not remove client " + ans + ". " + e.getMessage());
+            }
+        }
+    }
+
+    private void removeServers(Scanner input) {
+        System.out.println("Type an ID or \"ALL\" to remove servers: " + coordinator.servers);
+        String ans = input.nextLine().toLowerCase();
+        if ("all".equals(ans)) {
+            coordinator.servers.clear();
+        } else {
+            try {
+                coordinator.servers.remove(Integer.parseInt(ans));
+            } catch (Exception e) {
+                System.out.println("Could not remove server " + ans + ". " + e.getMessage());
+            }
+        }
+    }
+
     @GetMapping(value = "client/{substationID}")
-    BigInteger[] getRsaN(@PathVariable int substationID) {
-        rsaPrimes.putIfAbsent(substationID, generateRSAPrimes(coordinator.getFieldBase(substationID)));
-        return rsaPrimes.get(substationID);
+    Object getRsaN(@PathVariable int substationID) {
+        try {
+            rsaPrimes.putIfAbsent(substationID, generateRSAPrimes(coordinator.getFieldBase(substationID)));
+            return rsaPrimes.get(substationID);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(HttpStatus.PRECONDITION_FAILED);
+        }
     }
 
 
