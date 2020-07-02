@@ -39,6 +39,7 @@ public class RSAThesholdSetup {
                 System.out.println("[field bits] = " + coordinator.getFieldBase(0) + ", [rsa bits] = " + RSA_PRIME_BIT_LENGTH);
                 System.out.println(String.format("t security: %s\nServers: %s\nClients: %s\n", coordinator.tSecurity, coordinator.servers.toString(), coordinator.clients.toString()));
                 System.out.println("Type the name of the variable to change it");
+                System.out.println("==== Type \"q\" and then Enter to exit ====");
                 Scanner input = new Scanner(System.in);
                 switch (input.nextLine().replaceAll(" ", "").toLowerCase()) {
                     case "rsabits":
@@ -68,6 +69,8 @@ public class RSAThesholdSetup {
                     case "clients":
                         removeClients(input);
                         break;
+                    case "q":
+                        System.exit(0);
                 }
             }
 
